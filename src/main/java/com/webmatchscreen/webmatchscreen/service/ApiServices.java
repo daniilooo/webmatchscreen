@@ -3,7 +3,11 @@ package com.webmatchscreen.webmatchscreen.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webmatchscreen.webmatchscreen.ENUM.TipoTitulo;
 import com.webmatchscreen.webmatchscreen.interfaces.ConversorDados;
+import com.webmatchscreen.webmatchscreen.model.Episodio;
+import com.webmatchscreen.webmatchscreen.model.Temporada;
 import com.webmatchscreen.webmatchscreen.model.Titulo;
+import com.webmatchscreen.webmatchscreen.record.EpisodioRecord;
+import com.webmatchscreen.webmatchscreen.record.TemporadaRecord;
 import com.webmatchscreen.webmatchscreen.record.TituloRecord;
 import com.webmatchscreen.webmatchscreen.repository.TituloRepository;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -18,6 +22,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,6 +41,10 @@ public class ApiServices {
 
     private String montarUrl(String titulo){
         return apiUrl + titulo.replace(" ", "+") + apiKey;
+    }
+
+    private String montarUrl(String titulo, int numeroTemporada){
+        return apiUrl + titulo.replace(" ", "+")+ "&season="+ numeroTemporada + apiKey;
     }
 
     private TituloRecord consultaApi(String titulo) {
@@ -58,6 +68,29 @@ public class ApiServices {
         }
     }
 
+    private TemporadaRecord consultarApi(String titulo, int numeroTempoda) {
+        try {
+            String url = montarUrl(titulo,numeroTempoda);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(body, TemporadaRecord.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
     @Cacheable(value = "titulos", key = "#titulo")
     public Titulo buscarTitulo(String titulo){
 
@@ -79,7 +112,8 @@ public class ApiServices {
                 tituloConsultado.duracao(),
                 tituloConsultado.genero(),
                 tituloConsultado.sinopse(),
-                tituloConsultado.poster());
+                tituloConsultado.poster(),
+                tituloConsultado.temporadas());
 
         if(tituloConsultado.tipo().equals("movie")){
             tituloSerializado.setTipo(TipoTitulo.FILME);
@@ -87,10 +121,33 @@ public class ApiServices {
 
         if(tituloConsultado.tipo().equals("series")){
             tituloSerializado.setTipo(TipoTitulo.SERIE);
+
+            List<Temporada> listaTemporadas = new ArrayList<>();
+            List<Episodio> listaEpisodios = new ArrayList<>();
+
+            for(int i = 1; i <= tituloSerializado.getTemporadas(); i++){
+                TemporadaRecord temporadaConsultada = this.consultarApi(tituloSerializado.getTitulo(), tituloSerializado.getTemporadas());
+                Temporada temporada = new Temporada(tituloSerializado.getTitulo() , i);
+                listaTemporadas.add(temporada);
+
+                for(int j = 1; j <= temporadaConsultada.listaEpisodios().size(); j++){
+                    Episodio episodio = new Episodio(temporadaConsultada.listaEpisodios().get(j).titulo(),
+                                                    temporadaConsultada.listaEpisodios().get(j).lancamento(),
+                                                    temporadaConsultada.listaEpisodios().get(j).numeroEpisodio());
+
+                    listaEpisodios.add(episodio);
+                }
+
+            }
+
+
+
+            tituloSerializado.setListTemporadas(listaTemporadas);
+
+
         }
 
         tituloRepository.save(tituloSerializado);
-
         return tituloSerializado;
     }
 
