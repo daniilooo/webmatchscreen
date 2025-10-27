@@ -1,0 +1,12 @@
+com\webmatchscreen\webmatchscreen\config\EnvLoader.class
+com\webmatchscreen\webmatchscreen\service\ApiServices.class
+com\webmatchscreen\webmatchscreen\controller\PesquisaController.class
+com\webmatchscreen\webmatchscreen\repository\TituloRepository.class
+com\webmatchscreen\webmatchscreen\model\Episodio.class
+com\webmatchscreen\webmatchscreen\model\Temporada.class
+com\webmatchscreen\webmatchscreen\record\TituloRecord.class
+com\webmatchscreen\webmatchscreen\interfaces\ConversorDados.class
+com\webmatchscreen\webmatchscreen\ENUM\TipoTitulo.class
+com\webmatchscreen\webmatchscreen\model\Titulo.class
+com\webmatchscreen\webmatchscreen\WebmatchscreenApplication.class
+com\webmatchscreen\webmatchscreen\controller\CacheController.class
