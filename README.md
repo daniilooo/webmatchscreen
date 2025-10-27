@@ -79,7 +79,7 @@ API_URL=https://www.omdbapi.com/
 Clone o repositório e execute com Maven:
 
 ```bash
-git clone https://github.com/seuusuario/webmatchscreen.git
+git clone https://github.com/daniilooo/webmatchscreen.git
 cd webmatchscreen
 mvn spring-boot:run
 ```
