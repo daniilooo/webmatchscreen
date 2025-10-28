@@ -1,6 +1,7 @@
 package com.webmatchscreen.webmatchscreen.model;
 
 
+import com.webmatchscreen.webmatchscreen.record.EpisodioRecord;
 import jakarta.persistence.*;
 import lombok.*;
 

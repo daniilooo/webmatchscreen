@@ -1,6 +1,7 @@
 package com.webmatchscreen.webmatchscreen.controller;
 
 import com.webmatchscreen.webmatchscreen.model.Titulo;
+import com.webmatchscreen.webmatchscreen.record.EpisodioRecord;
 import com.webmatchscreen.webmatchscreen.record.TemporadaRecord;
 import com.webmatchscreen.webmatchscreen.record.TituloRecord;
 import com.webmatchscreen.webmatchscreen.service.ApiServices;
@@ -34,11 +35,26 @@ public class PesquisaController {
     @GetMapping("/{titulo}/{temporada}")
     public TemporadaRecord buscarPortemporada(@PathVariable String titulo,
                                               @PathVariable String temporada){
-        Map<String, String> parametros = new HashMap<>();
-        parametros.put("titulo", titulo);
-        parametros.put("temporada", temporada);
+
+        Map<String, String> parametros = Map.of(
+                "titulo", titulo,
+                "temporada", temporada
+        );
 
         return apiServices.pesquisar(parametros, TemporadaRecord.class);
+    }
+
+    @GetMapping("/{titulo}/{temporada}/{episodio}")
+    public EpisodioRecord buscarPorEpisodio(@PathVariable String titulo,
+                                            @PathVariable String temporada,
+                                            @PathVariable String episodio){
+        Map<String, String> parametros = Map.of(
+                "titulo", titulo,
+                "temporada", temporada,
+                "episodio", episodio
+        );
+
+        return apiServices.pesquisar(parametros, EpisodioRecord.class);
     }
 
 

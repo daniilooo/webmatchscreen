@@ -55,12 +55,12 @@ public class ApiServices {
             }
 
             try {
-                if (chave.equalsIgnoreCase("season")) {
+                if (chave.equalsIgnoreCase("temporada")) {
                     int temporada = Integer.parseInt(valor);
                     sbUrl.append("&season=" + temporada);
                 }
 
-                if (chave.equalsIgnoreCase("episode")) {
+                if (chave.equalsIgnoreCase("episodio")) {
                     int episodio = Integer.parseInt(valor);
                     sbUrl.append("&episode=" + episodio);
                 }
