@@ -6,6 +6,8 @@ C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\inter
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\model\Episodio.java
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\model\Temporada.java
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\model\Titulo.java
+C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\record\EpisodioRecord.java
+C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\record\TemporadaRecord.java
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\record\TituloRecord.java
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\repository\TituloRepository.java
 C:\Projetos\webmatchscreen\src\main\java\com\webmatchscreen\webmatchscreen\service\ApiServices.java

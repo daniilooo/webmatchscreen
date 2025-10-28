@@ -22,9 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ApiServices {
@@ -33,123 +31,80 @@ public class ApiServices {
 
     private final TituloRepository tituloRepository;
 
-    public ApiServices(Dotenv dotenv, TituloRepository tituloRepository){
+    public ApiServices(Dotenv dotenv, TituloRepository tituloRepository) {
         this.apiUrl = dotenv.get("API_URL") + "?t=";
         this.apiKey = "&plot=full&apikey=" + dotenv.get("API_KEY");
         this.tituloRepository = tituloRepository;
     }
 
-    private String montarUrl(String titulo){
-        return apiUrl + titulo.replace(" ", "+") + apiKey;
-    }
+    private String montarUrl(Map<String, String> parametrosBusca) {
 
-    private String montarUrl(String titulo, int numeroTemporada){
-        return apiUrl + titulo.replace(" ", "+")+ "&season="+ numeroTemporada + apiKey;
-    }
+        StringBuilder sbUrl = new StringBuilder();
+        sbUrl.append(apiUrl);
 
-    private TituloRecord consultaApi(String titulo) {
-        try {
-            String url = montarUrl(titulo);
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
+        for (Map.Entry<String, String> entry : parametrosBusca.entrySet()) {
+            String chave = entry.getKey();
+            String valor = entry.getValue();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String body = response.body();
-
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(body, TituloRecord.class);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private TemporadaRecord consultarApi(String titulo, int numeroTempoda) {
-        try {
-            String url = montarUrl(titulo,numeroTempoda);
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String body = response.body();
-
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(body, TemporadaRecord.class);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-
-    @Cacheable(value = "titulos", key = "#titulo")
-    public Titulo buscarTitulo(String titulo){
-
-        Optional<Titulo> tituloExistente = tituloRepository
-                .findByTituloContainingIgnoreCase(titulo)
-                .stream()
-                .findFirst();
-
-        if(tituloExistente.isPresent()){
-            System.out.println("Retornando um título que ja existe no banco");
-            return tituloExistente.get();
-        }
-
-        System.out.println("Buscando na API externa");
-        TituloRecord tituloConsultado = this.consultaApi(titulo);
-
-        Titulo tituloSerializado = new Titulo(tituloConsultado.titulo(),
-                tituloConsultado.anoLancamento(),
-                tituloConsultado.duracao(),
-                tituloConsultado.genero(),
-                tituloConsultado.sinopse(),
-                tituloConsultado.poster(),
-                tituloConsultado.temporadas());
-
-        if(tituloConsultado.tipo().equals("movie")){
-            tituloSerializado.setTipo(TipoTitulo.FILME);
-        }
-
-        if(tituloConsultado.tipo().equals("series")){
-            tituloSerializado.setTipo(TipoTitulo.SERIE);
-
-            List<Temporada> listaTemporadas = new ArrayList<>();
-            List<Episodio> listaEpisodios = new ArrayList<>();
-
-            for(int i = 1; i <= tituloSerializado.getTemporadas(); i++){
-                TemporadaRecord temporadaConsultada = this.consultarApi(tituloSerializado.getTitulo(), tituloSerializado.getTemporadas());
-                Temporada temporada = new Temporada(tituloSerializado.getTitulo() , i);
-                listaTemporadas.add(temporada);
-
-                for(int j = 1; j <= temporadaConsultada.listaEpisodios().size(); j++){
-                    Episodio episodio = new Episodio(temporadaConsultada.listaEpisodios().get(j).titulo(),
-                                                    temporadaConsultada.listaEpisodios().get(j).lancamento(),
-                                                    temporadaConsultada.listaEpisodios().get(j).numeroEpisodio());
-
-                    listaEpisodios.add(episodio);
-                }
-
+            if (valor == null || valor.isBlank()) {
+                continue;
             }
 
+            if (chave.equalsIgnoreCase("titulo")) {
+                sbUrl.append(valor.replace(" ", "+"));
+            }
 
+            try {
+                if (chave.equalsIgnoreCase("season")) {
+                    int temporada = Integer.parseInt(valor);
+                    sbUrl.append("&season=" + temporada);
+                }
 
-            tituloSerializado.setListTemporadas(listaTemporadas);
+                if (chave.equalsIgnoreCase("episode")) {
+                    int episodio = Integer.parseInt(valor);
+                    sbUrl.append("&episode=" + episodio);
+                }
 
-
+            } catch (NumberFormatException e) {
+                System.out.println("Parametros de busca de temporada ou episódio inválidos");
+            }
         }
 
-        tituloRepository.save(tituloSerializado);
-        return tituloSerializado;
+        sbUrl.append(apiKey);
+
+        return sbUrl.toString();
     }
 
+    private <T> T consultarApi(Map<String, String> parametros, Class<T> classe) {
+        try {
+            String url = montarUrl(parametros);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(body, classe);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+//    @Cacheable(value = "titulos", key = "#titulo")
+    public <T> T pesquisar(Map<String, String> parametros, Class<T> classe) {
+
+        if (parametros == null || parametros.isEmpty()) {
+            throw new IllegalArgumentException("Parâmetros de busca não podem ser nulos ou vazios");
+        }
+
+        return this.consultarApi(parametros, classe);
+    }
 
 }
+
