@@ -11,5 +11,5 @@ public record TituloRecord(@JsonAlias("Title") String titulo,
                            @JsonAlias("Plot") String sinopse,
                            @JsonAlias("Poster") String poster,
                            @JsonAlias("Type") String tipo,
-                           @JsonAlias("totalSeasons") String temporadas) {
+                           @JsonAlias("totalSeasons") int temporadas) {
 }

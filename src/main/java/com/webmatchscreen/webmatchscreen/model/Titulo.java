@@ -15,13 +15,14 @@ import java.util.List;
 @ToString
 public class Titulo {
 
-    public Titulo (String titulo, String lancamento, String duracao, String genero, String sinopse, String poster){
+    public Titulo (String titulo, String lancamento, String duracao, String genero, String sinopse, String poster, int temporadas){
         this.setTitulo(titulo);
         this.setLancamento(lancamento);
         this.setDuracao(duracao);
         this.setGenero(genero);
         this.setSinopse(sinopse);
         this.setPoster(poster);
+        this.setTemporadas(temporadas);
     }
 
     @Id
@@ -42,8 +43,10 @@ public class Titulo {
     @Enumerated(EnumType.STRING)
     private TipoTitulo tipo;
 
+    private int temporadas;
+
     @OneToMany(mappedBy = "titulo", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<Temporada> temporadas = new ArrayList<>();
+    private List<Temporada> listTemporadas = new ArrayList<>();
 
 }
